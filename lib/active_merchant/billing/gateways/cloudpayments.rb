@@ -74,18 +74,18 @@ module ActiveMerchant #:nodoc:
       def commit(path, parameters)
         parameters = parameters.present? ? parameters.to_query : nil
         response = parse(ssl_post(live_url + path, parameters, headers) )
-        model = response['Model']
+        @model = response['Model']
 
 
         msg = if success?(response)
                 'Transaction approved'
               else
                 if response['Message'].blank?
-                  if model['CardHolderMessage'].present?
-                    model['CardHolderMessage']
-                  elsif model['Reason'].present?
-                    model['Reason']
-                  elsif model['PaReq'].present?
+                  if @model['CardHolderMessage'].present?
+                    @model['CardHolderMessage']
+                  elsif @model['Reason'].present?
+                    @model['Reason']
+                  elsif @model['PaReq'].present?
                     '3ds'
                   end
                 else
@@ -95,7 +95,7 @@ module ActiveMerchant #:nodoc:
 
         Response.new(success?(response),
           msg,
-          model,
+          @model,
           authorization: auth_from(response),
           test: test?
         )
@@ -107,9 +107,9 @@ module ActiveMerchant #:nodoc:
 
       def auth_from response
         if success?(response)
-          model.present? ? model['TransactionId'] || model['Id'] : ''
+          @model.present? ? @model['TransactionId'] || @model['Id'] : ''
         else
-          model.present? ? model['TransactionId'] : ''
+          @model.present? ? @model['TransactionId'] : ''
         end
       end
 
